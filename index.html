@@ -8,7 +8,6 @@
       font-family: Arial, sans-serif;
       background: #f6f1e8;
       margin: 0;
-      padding: 0;
       color: #2b2118;
     }
 
@@ -49,11 +48,6 @@
       padding: 18px;
       border-radius: 16px;
       margin-bottom: 25px;
-    }
-
-    .match-box a {
-      color: #5a3e2b;
-      font-weight: bold;
     }
 
     .grid {
@@ -152,256 +146,391 @@
 
 <body>
 
-  <header>
-    <h1>HawkerBridge</h1>
-    <p>Find your hawker mentor.</p>
-  </header>
+<header>
+  <h1>HawkerBridge</h1>
+  <p>Find your hawker mentor.</p>
+</header>
 
-  <div class="container">
+<div class="container">
 
-    <div class="filters">
-      <input type="text" id="searchInput" placeholder="Search by name, stall, food...">
+  <div class="filters">
+    <input type="text" id="searchInput" placeholder="Search by name, stall, food...">
 
-      <select id="locationFilter">
-        <option value="">All locations</option>
-      </select>
+    <select id="vicinityFilter">
+      <option value="">All areas</option>
+    </select>
 
-      <select id="languageFilter">
-        <option value="">All languages</option>
-      </select>
+    <select id="languageFilter">
+      <option value="">All languages</option>
+    </select>
 
-      <select id="commitmentFilter">
-        <option value="">All commitment types</option>
-      </select>
+    <select id="cooperationFilter">
+      <option value="">All opportunities</option>
+    </select>
 
-      <select id="cuisineFilter">
-        <option value="">All cuisines</option>
-      </select>
-    </div>
-
-    <div class="match-box">
-      <h3>Not sure which hawker suits you?</h3>
-      <p>Take our matching quiz to find hawkers based on your interests, language, location and commitment level.</p>
-      <a href="#">Matching quiz coming soon</a>
-    </div>
-
-    <div id="data" class="grid">Loading hawkers...</div>
-
+    <select id="cuisineFilter">
+      <option value="">All cuisines</option>
+    </select>
   </div>
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <div id="modalDetails"></div>
-    </div>
+  <div class="match-box">
+    <h3>Not sure which hawker suits you?</h3>
+    <p>Take our future matching quiz to find suitable hawkers based on your interests, location, language and commitment level.</p>
+    <a href="#">Matching quiz coming soon</a>
   </div>
 
-  <script>
-    const sheetURLs = [
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=573141939&single=true&output=csv",
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=1090865305&single=true&output=csv",
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=346350130&single=true&output=csv",
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=208707379&single=true&output=csv"
-    ];
+  <div id="data" class="grid">Loading hawkers...</div>
 
-    let hawkers = [];
+</div>
 
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let value = "";
-      let insideQuotes = false;
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div id="modalDetails"></div>
+  </div>
+</div>
 
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const next = text[i + 1];
+<script>
+const sheetURLs = [
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=573141939&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=1090865305&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=346350130&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=208707379&single=true&output=csv"
+];
 
-        if (char === '"' && insideQuotes && next === '"') {
-          value += '"';
-          i++;
-        } else if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === "," && !insideQuotes) {
-          row.push(value);
-          value = "";
-        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
-          if (value || row.length > 0) {
-            row.push(value);
-            rows.push(row);
-            row = [];
-            value = "";
-          }
-        } else {
-          value += char;
-        }
-      }
+let hawkers = [];
 
+function clean(text) {
+  return (text || "").trim();
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      value += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      row.push(value);
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
       if (value || row.length > 0) {
         row.push(value);
         rows.push(row);
+        row = [];
+        value = "";
       }
-
-      return rows;
+    } else {
+      value += char;
     }
+  }
 
-    Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
-      .then(results => {
-        results.forEach(data => {
-          const rows = parseCSV(data);
+  if (value || row.length > 0) {
+    row.push(value);
+    rows.push(row);
+  }
 
-          rows.slice(1).forEach(cols => {
-            if (!cols[1]) return;
+  return rows;
+}
 
-            hawkers.push({
-              name: cols[1] || "",
-              stallName: cols[2] || "",
-              location: cols[3] || "",
-              phone: cols[4] || "",
-              email: cols[5] || "",
-              cuisine: cols[6] || "",
-              foodType: cols[8] || "",
-              experienceYears: cols[9] || "",
-              about: cols[10] || "",
-              image: cols[11] || "",
-              offer: cols[12] || "",
-              qualities: cols[14] || "",
-              commitment: cols[15] || "",
-              experienceNeeded: cols[17] || "",
-              requirements: cols[18] || "",
-              directContact: cols[19] || "",
-              languages: cols[20] || ""
-            });
-          });
+function getValue(record, possibleHeaders) {
+  for (const header of possibleHeaders) {
+    if (record[header] !== undefined && clean(record[header]) !== "") {
+      return clean(record[header]);
+    }
+  }
+  return "";
+}
+
+function combine(main, other) {
+  main = clean(main);
+  other = clean(other);
+
+  if (main && other) return main + ", " + other;
+  return main || other || "";
+}
+
+function getImageURL(link) {
+  if (!link) return "https://via.placeholder.com/300x200?text=HawkerBridge";
+
+  if (link.includes("drive.google.com")) {
+    const match = link.match(/[-\w]{25,}/);
+    if (match) {
+      return `https://drive.google.com/uc?export=view&id=${match[0]}`;
+    }
+  }
+
+  return link;
+}
+
+function splitOptions(value) {
+  return value
+    .split(",")
+    .map(v => v.trim())
+    .filter(v => v !== "");
+}
+
+Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
+  .then(results => {
+    results.forEach(data => {
+      const rows = parseCSV(data);
+      const headers = rows[0].map(h => clean(h));
+
+      rows.slice(1).forEach(row => {
+        let record = {};
+        headers.forEach((header, index) => {
+          record[header] = clean(row[index]);
         });
 
-        populateFilters();
-        displayHawkers(hawkers);
+        const cuisineMain = getValue(record, [
+          "Cuisine Type",
+          "菜品类型",
+          "Jenis Masakan",
+          "சமையல் வகை"
+        ]);
+
+        const cuisineOther = getValue(record, [
+          "Other (Cuisine)",
+          "其他菜品类型（如有）",
+          "Jenis masakan lain (jika ada)",
+          "மற்ற உணவு வகை (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const cooperationMain = getValue(record, [
+          "What are you looking for?",
+          "您正在寻找什么类型的合作方式？",
+          "Apakah yang anda tawarkan?",
+          "நீங்கள் தேடுவது என்ன?"
+        ]);
+
+        const cooperationOther = getValue(record, [
+          "Other (Cooperation Type)",
+          "其他合作方式（如有）",
+          "Jenis kerjasama lain (jika ada)",
+          "மற்ற ஒத்துழைப்பு முறை (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const languageMain = getValue(record, [
+          "What languages can you speak",
+          "你会说哪些语言",
+          "Apakah bahasa yang anda boleh bertutur",
+          "நீங்கள் எந்த மொழிகளை பேச முடியும்:"
+        ]);
+
+        const languageOther = getValue(record, [
+          "Other (Language)",
+          "其他语言（如有）",
+          "Bahasa lain (jika ada)",
+          "மற்ற மொழிகள் (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const hawker = {
+          name: getValue(record, ["Full Name", "姓名", "Nama Penuh", "முழு பெயர்"]),
+          stallName: getValue(record, ["Stall Name", "摊位名称", "Nama Gerai", "கடை பெயர்"]),
+          location: getValue(record, ["Location of Stall", "摊位位置", "Lokasi Gerai", "கடை அமைந்துள்ள இடம்"]),
+          phone: getValue(record, ["Contact Number", "联系电话", "Nombor Perhubungan", "தொடர்பு எண்"]),
+          email: getValue(record, ["Email (Optional)", "电子邮件（可选）", "E-mel (Pilihan)", "மின்னஞ்சல் (விருப்பம்)"]),
+          cuisine: combine(cuisineMain, cuisineOther),
+          foodType: getValue(record, [
+            "Type of Food (e.g Chicken Rice, Wanton Mee)",
+            "食物类型（例如：鸡饭、云吞面）",
+            "Jenis Makanan (contoh: Nasi Ayam, Wanton Mee)",
+            "உணவு வகை (எ.கா.: சிக்கன் ரைஸ், வொண்டன் மீ)"
+          ]),
+          experienceYears: getValue(record, ["Years of Experience", "多年经验", "Tahun Pengalaman", "அனுபவ ஆண்டுகள்"]),
+          about: getValue(record, [
+            "Tell us more about your stall",
+            "请详细介绍一下您的摊位。",
+            "Ceritakan lebih lanjut tentang gerai anda",
+            "உங்கள் கடையைப் பற்றி மேலும் கூறுங்கள்"
+          ]),
+          image: getValue(record, ["Stall/Food image", "摊位/食品图片", "Gambar Gerai/Makanan", "கடை / உணவு படம்"]),
+          cooperation: combine(cooperationMain, cooperationOther),
+          qualities: getValue(record, [
+            "What qualities are you looking for in a successor?",
+            "您希望继任者具备哪些素质？",
+            "Apakah ciri-ciri yang anda cari dalam pengganti?",
+            "ஒரு பின்தொடர்பவரில் நீங்கள் எதிர்பார்க்கும் குணங்கள் என்ன?"
+          ]),
+          commitment: getValue(record, [
+            "Preferred Commitment Level",
+            "首选承诺水平",
+            "Tahap komitmen yang diingini",
+            "விரும்பப்படும் ஒப்பந்த நிலை"
+          ]),
+          experienceNeeded: getValue(record, [
+            "Do you require prior experience?",
+            "你们需要相关经验吗？",
+            "Adakah pengalaman diperlukan?",
+            "முன் அனுபவம் தேவையா?"
+          ]),
+          requirements: getValue(record, [
+            "Any additional expectations?",
+            "还有什么额外的期望吗？",
+            "Sebarang keperluan tambahan",
+            "மேலும் எதிர்பார்ப்புகள்"
+          ]),
+          directContact: getValue(record, [
+            "Are you willing to be contacted directly by interested applicants?",
+            "您是否愿意接受有意向的申请人的直接联系？",
+            "Adakah anda bersetuju untuk dihubungi secara langsung oleh pemohon yang berminat?",
+            "ஆர்வமுள்ள விண்ணப்பதாரர்கள் நேரடியாக உங்களை தொடர்பு கொள்ள அனுமதிக்கிறீர்களா?"
+          ]),
+          languages: combine(languageMain, languageOther),
+          vicinity: getValue(record, [
+            "General vicinity of your stall",
+            "您的摊位大致位于哪个区域？",
+            "Kawasan umum gerai anda",
+            "உங்கள் கடை அமைந்துள்ள பொது பகுதி"
+          ])
+        };
+
+        if (hawker.name && hawker.stallName) {
+          hawkers.push(hawker);
+        }
       });
+    });
 
-    function populateFilters() {
-      fillDropdown("locationFilter", hawkers.map(h => h.location));
-      fillDropdown("languageFilter", hawkers.map(h => h.languages));
-      fillDropdown("commitmentFilter", hawkers.map(h => h.commitment));
-      fillDropdown("cuisineFilter", hawkers.map(h => h.cuisine));
-    }
+    populateFilters();
+    displayHawkers(hawkers);
+  });
 
-    function fillDropdown(id, values) {
-      const dropdown = document.getElementById(id);
-      const uniqueValues = [...new Set(values.filter(v => v.trim() !== ""))];
+function populateFilters() {
+  fillDropdown("vicinityFilter", hawkers.map(h => h.vicinity));
+  fillDropdown("cuisineFilter", hawkers.flatMap(h => splitOptions(h.cuisine)));
+  fillDropdown("languageFilter", hawkers.flatMap(h => splitOptions(h.languages)));
+  fillDropdown("cooperationFilter", hawkers.flatMap(h => splitOptions(h.cooperation)));
+}
 
-      uniqueValues.forEach(value => {
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = value;
-        dropdown.appendChild(option);
-      });
-    }
+function fillDropdown(id, values) {
+  const dropdown = document.getElementById(id);
+  const uniqueValues = [...new Set(values.filter(v => v && v.trim() !== ""))];
 
-    function displayHawkers(list) {
-      let html = "";
+  uniqueValues.forEach(value => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    dropdown.appendChild(option);
+  });
+}
 
-      list.forEach((h, index) => {
-        const imageHTML = h.image
-          ? `<img src="${h.image}" alt="${h.stallName}">`
-          : `<img src="https://via.placeholder.com/300x200?text=HawkerBridge" alt="No image">`;
+function displayHawkers(list) {
+  let html = "";
 
-        html += `
-          <div class="card" onclick="openModal(${index})">
-            ${imageHTML}
-            <div class="card-content">
-              <h3>${h.name}</h3>
-              <p><strong>Stall:</strong> ${h.stallName}</p>
-              <p><strong>Cuisine:</strong> ${h.cuisine}</p>
-              <p><strong>Location:</strong> ${h.location}</p>
-              <span class="tag">${h.languages}</span>
-            </div>
-          </div>
-        `;
-      });
+  list.forEach((h, index) => {
+    html += `
+      <div class="card" onclick="openModal(${index})">
+        <img src="${getImageURL(h.image)}" alt="${h.stallName}">
+        <div class="card-content">
+          <h3>${h.name}</h3>
+          <p><strong>Stall:</strong> ${h.stallName}</p>
+          <p><strong>Cuisine:</strong> ${h.cuisine}</p>
+          <p><strong>Location:</strong> ${h.location}</p>
+          <span class="tag">${h.languages}</span>
+        </div>
+      </div>
+    `;
+  });
 
-      document.getElementById("data").innerHTML = html || "No hawkers found.";
-    }
+  document.getElementById("data").innerHTML = html || "No hawkers found.";
+}
 
-    function applyFilters() {
-      const search = document.getElementById("searchInput").value.toLowerCase();
-      const location = document.getElementById("locationFilter").value;
-      const language = document.getElementById("languageFilter").value;
-      const commitment = document.getElementById("commitmentFilter").value;
-      const cuisine = document.getElementById("cuisineFilter").value;
+function applyFilters() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const vicinity = document.getElementById("vicinityFilter").value;
+  const language = document.getElementById("languageFilter").value;
+  const cooperation = document.getElementById("cooperationFilter").value;
+  const cuisine = document.getElementById("cuisineFilter").value;
 
-      const filtered = hawkers.filter(h => {
-        const textMatch =
-          h.name.toLowerCase().includes(search) ||
-          h.stallName.toLowerCase().includes(search) ||
-          h.foodType.toLowerCase().includes(search) ||
-          h.cuisine.toLowerCase().includes(search);
+  const filtered = hawkers.filter(h => {
+    const textMatch =
+      h.name.toLowerCase().includes(search) ||
+      h.stallName.toLowerCase().includes(search) ||
+      h.location.toLowerCase().includes(search) ||
+      h.foodType.toLowerCase().includes(search) ||
+      h.cuisine.toLowerCase().includes(search);
 
-        const locationMatch = !location || h.location === location;
-        const languageMatch = !language || h.languages.includes(language);
-        const commitmentMatch = !commitment || h.commitment === commitment;
-        const cuisineMatch = !cuisine || h.cuisine === cuisine;
+    const vicinityMatch = !vicinity || h.vicinity === vicinity;
+    const languageMatch = !language || h.languages.includes(language);
+    const cooperationMatch = !cooperation || h.cooperation.includes(cooperation);
+    const cuisineMatch = !cuisine || h.cuisine.includes(cuisine);
 
-        return textMatch && locationMatch && languageMatch && commitmentMatch && cuisineMatch;
-      });
+    return textMatch && vicinityMatch && languageMatch && cooperationMatch && cuisineMatch;
+  });
 
-      displayHawkers(filtered);
-    }
+  displayHawkers(filtered);
+}
 
-    function openModal(index) {
-      const h = hawkers[index];
+function openModal(index) {
+  const h = hawkers[index];
 
-      const allowedDirectContact =
-        h.directContact.includes("Yes") ||
-        h.directContact.includes("Ya") ||
-        h.directContact.includes("是") ||
-        h.directContact.includes("ஆம்");
+  const direct = (h.directContact || "").toLowerCase();
 
-      const contactInfo = allowedDirectContact
-        ? `
-          <p><strong>Phone:</strong> ${h.phone}</p>
-          <p><strong>Email:</strong> ${h.email || "Not provided"}</p>
-        `
-        : `
-          <p class="hidden-contact"><strong>Contact:</strong> This hawker prefers to be contacted through HawkerBridge matching.</p>
-        `;
+  const allowedDirectContact =
+    direct.includes("yes") ||
+    direct.includes("要") ||
+    direct.includes("ya") ||
+    direct.includes("ஆம்");
 
-      const imageHTML = h.image
-        ? `<img src="${h.image}" alt="${h.stallName}">`
-        : "";
+  const contactInfo = allowedDirectContact
+    ? `
+      <p><strong>Phone:</strong> ${h.phone}</p>
+      <p><strong>Email:</strong> ${h.email || "Not provided"}</p>
+    `
+    : `
+      <p class="hidden-contact">
+        This hawker prefers to be contacted through HawkerBridge matching.
+      </p>
+    `;
 
-      document.getElementById("modalDetails").innerHTML = `
-        ${imageHTML}
-        <h2>${h.stallName}</h2>
-        <p><strong>Hawker:</strong> ${h.name}</p>
-        <p><strong>Cuisine:</strong> ${h.cuisine}</p>
-        <p><strong>Food type:</strong> ${h.foodType}</p>
-        <p><strong>Location:</strong> ${h.location}</p>
-        <p><strong>Languages:</strong> ${h.languages}</p>
-        <p><strong>Experience:</strong> ${h.experienceYears} years</p>
-        <p><strong>Commitment wanted:</strong> ${h.commitment}</p>
-        <p><strong>Experience needed:</strong> ${h.experienceNeeded}</p>
-        <hr>
-        <p><strong>About the stall:</strong><br>${h.about}</p>
-        <p><strong>What they offer:</strong><br>${h.offer}</p>
-        <p><strong>Qualities wanted:</strong><br>${h.qualities}</p>
-        <p><strong>Additional requirements:</strong><br>${h.requirements}</p>
-        <hr>
-        ${contactInfo}
-      `;
+  document.getElementById("modalDetails").innerHTML = `
+    <img src="${getImageURL(h.image)}" alt="${h.stallName}">
+    <h2>${h.stallName}</h2>
 
-      document.getElementById("modal").style.display = "block";
-    }
+    <p><strong>Hawker:</strong> ${h.name}</p>
+    <p><strong>Cuisine:</strong> ${h.cuisine}</p>
+    <p><strong>Food type:</strong> ${h.foodType}</p>
+    <p><strong>Location:</strong> ${h.location}</p>
+    <p><strong>General vicinity:</strong> ${h.vicinity}</p>
+    <p><strong>Languages:</strong> ${h.languages}</p>
+    <p><strong>Years of experience:</strong> ${h.experienceYears}</p>
 
-    function closeModal() {
-      document.getElementById("modal").style.display = "none";
-    }
+    <hr>
 
-    document.getElementById("searchInput").addEventListener("input", applyFilters);
-    document.getElementById("locationFilter").addEventListener("change", applyFilters);
-    document.getElementById("languageFilter").addEventListener("change", applyFilters);
-    document.getElementById("commitmentFilter").addEventListener("change", applyFilters);
-    document.getElementById("cuisineFilter").addEventListener("change", applyFilters);
-  </script>
+    <p><strong>About the stall:</strong><br>${h.about || "Not provided"}</p>
+    <p><strong>Opportunity type:</strong><br>${h.cooperation || "Not provided"}</p>
+    <p><strong>Preferred commitment:</strong><br>${h.commitment || "Not provided"}</p>
+    <p><strong>Qualities wanted:</strong><br>${h.qualities || "Not provided"}</p>
+    <p><strong>Prior experience required:</strong><br>${h.experienceNeeded || "Not provided"}</p>
+    <p><strong>Additional expectations:</strong><br>${h.requirements || "Not provided"}</p>
+
+    <hr>
+
+    ${contactInfo}
+  `;
+
+  document.getElementById("modal").style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+document.getElementById("searchInput").addEventListener("input", applyFilters);
+document.getElementById("vicinityFilter").addEventListener("change", applyFilters);
+document.getElementById("languageFilter").addEventListener("change", applyFilters);
+document.getElementById("cooperationFilter").addEventListener("change", applyFilters);
+document.getElementById("cuisineFilter").addEventListener("change", applyFilters);
+</script>
 
 </body>
 </html>

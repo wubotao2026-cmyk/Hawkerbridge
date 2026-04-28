@@ -6,14 +6,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f6f1e8;
+      background: #f7f7f8;
       margin: 0;
-      color: #2b2118;
+      color: #1f1f1f;
     }
 
     header {
-      background: #5a3e2b;
-      color: white;
+      background: #1f1f1f;
+      color: #ffffff;
       padding: 30px;
       text-align: center;
     }
@@ -24,17 +24,23 @@
       margin: auto;
     }
 
-    .filters {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
+  .filters {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb; /* soft outline */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04); /* very subtle depth */
+  margin-bottom: 25px;
 
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.filters select,
+.filters input {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
     input, select {
       padding: 10px;
       border-radius: 10px;
@@ -43,8 +49,8 @@
     }
 
     .match-box {
-      background: #fff7df;
-      border: 1px solid #e0c37a;
+      background: #f1f5ff;
+      border: 1px solid #dbeafe;
       padding: 18px;
       border-radius: 16px;
       margin-bottom: 25px;
@@ -54,7 +60,7 @@
     .interest-button {
       display: inline-block;
       margin-top: 8px;
-      background: #5a3e2b;
+      background: #4f46e5;
       color: white;
       text-decoration: none;
       padding: 10px 16px;
@@ -72,14 +78,15 @@
       background: white;
       border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
       cursor: pointer;
       transition: 0.2s;
       min-height: 350px;
     }
 
     .card:hover {
-      transform: translateY(-4px);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
     }
 
     .card img {
@@ -103,18 +110,20 @@
       font-size: 14px;
     }
 
-    .tag {
-      display: inline-block;
-      background: #eee1d1;
-      padding: 5px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      margin-top: 6px;
-    }
+.tag {
+  display: inline-block;
+  background: #eef2ff;
+  color: #4338ca; /* important — adds contrast */
+  padding: 4px 10px;
+  border-radius: 999px; /* pill shape */
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
 
     .uploaded-date {
-      color: #6b5b4a;
-      font-size: 12px;
+      color: #9ca3af;
+      font-size: 11px;
       margin-top: 8px;
     }
 
@@ -687,22 +696,29 @@ function displayHawkers(list) {
 
   let html = "";
 
-  list.forEach((h, index) => {
-    html += `
-      <div class="card" onclick="openModal(${index})">
-        <img src="${getImageURL(h.image)}" alt="${h.stallName}">
-        <div class="card-content">
-          <h3>${h.name}</h3>
-          <p><strong>Stall:</strong> ${h.stallName}</p>
-          <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
-          <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
-          <span class="tag">${h.languages || "Languages not provided"}</span>
-          <p class="uploaded-date">Uploaded: ${formatDate(h.timestamp)}</p>
-        </div>
-      </div>
-    `;
-  });
+list.forEach((h, index) => {
 
+const isNew =
+  h.timestamp instanceof Date &&
+  !isNaN(h.timestamp.getTime()) &&
+  (Date.now() - h.timestamp.getTime()) < 3 * 24 * 60 * 60 * 1000;
+  html += `
+    <div class="card" onclick="openModal(${index})">
+
+      ${isNew ? `<div class="new-badge">NEW</div>` : ""}
+
+      <img src="${getImageURL(h.image)}" alt="${h.stallName}">
+      <div class="card-content">
+        <h3>${h.name}</h3>
+        <p><strong>Stall:</strong> ${h.stallName}</p>
+        <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
+        <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
+        <span class="tag">${h.languages || "Languages not provided"}</span>
+        <p class="uploaded-date">Uploaded: ${formatDate(h.timestamp)}</p>
+      </div>
+    </div>
+  `;
+});
   document.getElementById("data").innerHTML = html || "No hawkers found.";
 }
 

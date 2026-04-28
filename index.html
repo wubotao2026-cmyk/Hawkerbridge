@@ -11,29 +11,45 @@
   <div id="data">Loading...</div>
 
   <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=573141939&single=true&output=csv";
+    const sheetURLs = [
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=573141939&single=true&output=csv",
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=1090865305&single=true&output=csv",
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=346350130&single=true&output=csv",
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=208707379&single=true&output=csv"
+    ];
 
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(data => {
+    let allData = [];
+
+    Promise.all(
+      sheetURLs.map(url =>
+        fetch(url).then(res => res.text())
+      )
+    ).then(results => {
+
+      results.forEach(data => {
         const rows = data.split("\n");
-        let html = "";
 
         rows.slice(1).forEach(row => {
           const cols = row.split(",");
-
-          html += `
-            <div style="border:1px solid black; padding:10px; margin:10px;">
-              <h3>${cols[1]}</h3>
-              <p>Cuisine: ${cols[2]}</p>
-              <p>Location: ${cols[3]}</p>
-              <p>Contact: ${cols[4]}</p>
-            </div>
-          `;
+          allData.push(cols);
         });
-
-        document.getElementById("data").innerHTML = html;
       });
+
+      let html = "";
+
+      allData.forEach(cols => {
+        html += `
+          <div style="border:1px solid black; padding:10px; margin:10px;">
+            <h3>${cols[1]}</h3>
+            <p>Cuisine: ${cols[2]}</p>
+            <p>Location: ${cols[3]}</p>
+            <p>Contact: ${cols[4]}</p>
+          </div>
+        `;
+      });
+
+      document.getElementById("data").innerHTML = html;
+    });
   </script>
 </body>
 </html>

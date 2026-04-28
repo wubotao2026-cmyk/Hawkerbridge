@@ -50,7 +50,8 @@
       margin-bottom: 25px;
     }
 
-    .quiz-button {
+    .quiz-button,
+    .interest-button {
       display: inline-block;
       margin-top: 8px;
       background: #5a3e2b;
@@ -210,6 +211,7 @@ const sheetURLs = [
 ];
 
 let hawkers = [];
+let currentList = [];
 
 function clean(text) {
   return (text || "").trim();
@@ -383,6 +385,7 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
 
       rows.slice(1).forEach(row => {
         let record = {};
+
         headers.forEach((header, index) => {
           record[header] = clean(row[index]);
         });
@@ -449,7 +452,7 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
           location: getValue(record, ["Location of Stall", "摊位位置", "Lokasi Gerai", "கடை அமைந்துள்ள இடம்"]),
           phone: getValue(record, ["Contact Number", "联系电话", "Nombor Perhubungan", "தொடர்பு எண்"]),
           email: getValue(record, ["Email (Optional)", "电子邮件（可选）", "E-mel (Pilihan)", "மின்னஞ்சல் (விருப்பம்)"]),
-        cuisine: splitOptions(cuisineMain).join(", "),
+          cuisine: splitOptions(cuisineMain).join(", "),
           foodType: getValue(record, [
             "Type of Food (e.g Chicken Rice, Wanton Mee)",
             "食物类型（例如：鸡饭、云吞面）",
@@ -519,11 +522,11 @@ function populateFilters() {
   fillDropdown("cuisineFilter", ["Chinese", "Malay", "Indian", "Western"]);
   fillDropdown("languageFilter", ["English", "Chinese", "Malay", "Tamil"]);
   fillDropdown("cooperationFilter", [
-  "Full Stall Takeover",
-  "Apprenticeship / Training (No Pay)",
-  "Apprenticeship / Training (With Pay)",
-  "Partnership"
-]);
+    "Full Stall Takeover",
+    "Apprenticeship / Training (No Pay)",
+    "Apprenticeship / Training (With Pay)",
+    "Partnership"
+  ]);
 }
 
 function fillDropdown(id, values) {
@@ -539,6 +542,8 @@ function fillDropdown(id, values) {
 }
 
 function displayHawkers(list) {
+  currentList = list;
+
   let html = "";
 
   list.forEach((h, index) => {
@@ -586,7 +591,7 @@ function applyFilters() {
 }
 
 function openModal(index) {
-  const h = hawkers[index];
+  const h = currentList[index];
 
   const direct = (h.directContact || "").toLowerCase();
 
@@ -598,13 +603,19 @@ function openModal(index) {
 
   const contactInfo = allowedDirectContact
     ? `
-      <p><strong>Phone:</strong> ${h.phone}</p>
+      <p><strong>Phone:</strong> ${h.phone || "Not provided"}</p>
       <p><strong>Email:</strong> ${h.email || "Not provided"}</p>
     `
     : `
       <p class="hidden-contact">
         This hawker prefers to be contacted through HawkerBridge matching.
       </p>
+
+      <a class="interest-button"
+         href="https://docs.google.com/forms/d/e/1FAIpQLSepecQxEnAd-q-0KxFCv8OKKCCtmUSd_A6DalftjvKqO5tMVg/viewform?usp=pp_url&entry.882535211=${encodeURIComponent(h.name)}"
+         target="_blank">
+         I’m interested (contact via form)
+      </a>
     `;
 
   document.getElementById("modalDetails").innerHTML = `

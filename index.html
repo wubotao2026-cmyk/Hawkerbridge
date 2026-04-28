@@ -75,7 +75,7 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.12);
       cursor: pointer;
       transition: 0.2s;
-      min-height: 330px;
+      min-height: 350px;
     }
 
     .card:hover {
@@ -110,6 +110,12 @@
       border-radius: 12px;
       font-size: 12px;
       margin-top: 6px;
+    }
+
+    .uploaded-date {
+      color: #6b5b4a;
+      font-size: 12px;
+      margin-top: 8px;
     }
 
     .modal {
@@ -249,6 +255,7 @@ function normalizeValue(value) {
     "Chinese": "Chinese",
     "中国菜": "Chinese",
     "中式": "Chinese",
+    "சீனம்": "Chinese",
     "சீன": "Chinese",
 
     "Malay": "Malay",
@@ -258,10 +265,12 @@ function normalizeValue(value) {
 
     "Indian": "Indian",
     "印度菜": "Indian",
+    "இந்தியம்": "Indian",
     "இந்திய": "Indian",
 
     "Western": "Western",
     "西餐": "Western",
+    "மேற்கத்தியம்": "Western",
     "மேலைநாட்டு": "Western",
 
     "English": "English",
@@ -272,34 +281,73 @@ function normalizeValue(value) {
 
     "Part-time": "Part-time",
     "兼职": "Part-time",
-    "Separuh masa": "Part-time",
     "பகுதி நேரம்": "Part-time",
+    "Separuh masa": "Part-time",
 
     "Full-time": "Full-time",
     "全职": "Full-time",
-    "Sepenuh masa": "Full-time",
     "முழு நேரம்": "Full-time",
+    "Sepenuh masa": "Full-time",
 
     "Long-term": "Long-term",
     "长期": "Long-term",
-    "Jangka panjang": "Long-term",
     "நீண்டகாலம்": "Long-term",
+    "Jangka panjang": "Long-term",
 
     "Full Stall Takeover": "Full Stall Takeover",
     "摊位全面接管": "Full Stall Takeover",
+    "முழு கடை பொறுப்பேற்பு": "Full Stall Takeover",
 
     "Apprenticeship / Training (No Pay)": "Apprenticeship / Training (No Pay)",
     "学徒/培训（无薪）": "Apprenticeship / Training (No Pay)",
+    "பயிற்சி / சீடத்துவம் (ஊதியம் இல்லை)": "Apprenticeship / Training (No Pay)",
 
     "Apprenticeship / Training(With Pay)": "Apprenticeship / Training (With Pay)",
     "Apprenticeship / Training (With Pay)": "Apprenticeship / Training (With Pay)",
     "学徒/培训（有薪）": "Apprenticeship / Training (With Pay)",
+    "பயிற்சி / சீடத்துவம் (ஊதியத்துடன்)": "Apprenticeship / Training (With Pay)",
 
     "Partnership": "Partnership",
-    "合伙经营": "Partnership"
+    "合伙经营": "Partnership",
+    "கூட்டுத்தாபனம்": "Partnership"
   };
 
   return map[value] || value;
+}
+
+function parseDate(value) {
+  if (!value) return new Date(0);
+
+  const directDate = new Date(value);
+  if (!isNaN(directDate)) return directDate;
+
+  const parts = value.split(/[\/\s:]+/);
+
+  if (parts.length >= 3) {
+    const day = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const year = Number(parts[2]);
+    const hour = Number(parts[3] || 0);
+    const minute = Number(parts[4] || 0);
+    const second = Number(parts[5] || 0);
+
+    const parsed = new Date(year, month, day, hour, minute, second);
+    if (!isNaN(parsed)) return parsed;
+  }
+
+  return new Date(0);
+}
+
+function formatDate(date) {
+  if (!date || isNaN(date) || date.getTime() === 0) {
+    return "Unknown";
+  }
+
+  return date.toLocaleDateString("en-SG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
 }
 
 function parseCSV(text) {
@@ -394,7 +442,8 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
           "Cuisine Type",
           "菜品类型",
           "Jenis Masakan",
-          "சமையல் வகை"
+          "சமையல் வகை",
+          "Cooking type"
         ]);
 
         const cuisineOther = getValue(record, [
@@ -420,6 +469,8 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
 
         const languageMain = getValue(record, [
           "What languages can you speak",
+          "What languages ​​can you speak?",
+          "What languages ​​can you speak:",
           "你会说哪些语言",
           "Apakah bahasa yang anda boleh bertutur",
           "நீங்கள் எந்த மொழிகளை பேச முடியும்:"
@@ -427,6 +478,7 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
 
         const languageOther = getValue(record, [
           "Other (Language)",
+          "If your option is not listed above, please fill it in.",
           "其他语言（如有）",
           "Bahasa lain (jika ada)",
           "மற்ற மொழிகள் (இருந்தால் குறிப்பிடவும்)"
@@ -441,66 +493,149 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
 
         const imageOriginal = getValue(record, [
           "Stall/Food image",
+          "Stall/Food Images",
+          "Shop / Food Picture",
           "摊位/食品图片",
           "Gambar Gerai/Makanan",
           "கடை / உணவு படம்"
         ]);
 
+        const timestampRaw = getValue(record, [
+          "Timestamp",
+          "时间戳",
+          "Cap masa",
+          "நேர முத்திரை"
+        ]);
+
         const hawker = {
-          name: getValue(record, ["Full Name", "姓名", "Nama Penuh", "முழு பெயர்"]),
-          stallName: getValue(record, ["Stall Name", "摊位名称", "Nama Gerai", "கடை பெயர்"]),
-          location: getValue(record, ["Location of Stall", "摊位位置", "Lokasi Gerai", "கடை அமைந்துள்ள இடம்"]),
-          phone: getValue(record, ["Contact Number", "联系电话", "Nombor Perhubungan", "தொடர்பு எண்"]),
-          email: getValue(record, ["Email (Optional)", "电子邮件（可选）", "E-mel (Pilihan)", "மின்னஞ்சல் (விருப்பம்)"]),
+          timestamp: parseDate(timestampRaw),
+
+          name: getValue(record, [
+            "Full Name",
+            "Name",
+            "Full name",
+            "姓名",
+            "Nama Penuh",
+            "முழு பெயர்"
+          ]),
+
+          stallName: getValue(record, [
+            "Stall Name",
+            "Store name",
+            "摊位名称",
+            "Nama Gerai",
+            "கடை பெயர்"
+          ]),
+
+          location: getValue(record, [
+            "Location of Stall",
+            "stall location",
+            "Where is the store located?",
+            "摊位位置",
+            "Lokasi Gerai",
+            "கடை அமைந்துள்ள இடம்"
+          ]),
+
+          phone: getValue(record, [
+            "Contact Number",
+            "Contact number",
+            "联系电话",
+            "Nombor Perhubungan",
+            "தொடர்பு எண்"
+          ]),
+
+          email: getValue(record, [
+            "Email (Optional)",
+            "Email (optional)",
+            "电子邮件（可选）",
+            "E-mel (Pilihan)",
+            "மின்னஞ்சல் (விருப்பம்)"
+          ]),
+
           cuisine: splitOptions(cuisineMain).join(", "),
+
           foodType: getValue(record, [
             "Type of Food (e.g Chicken Rice, Wanton Mee)",
+            "Food type (e.g., chicken rice, wonton noodles)",
+            "Food type (e.g.: Chicken Rice, Wonton Mee)",
             "食物类型（例如：鸡饭、云吞面）",
             "Jenis Makanan (contoh: Nasi Ayam, Wanton Mee)",
             "உணவு வகை (எ.கா.: சிக்கன் ரைஸ், வொண்டன் மீ)"
           ]),
-          experienceYears: getValue(record, ["Years of Experience", "多年经验", "Tahun Pengalaman", "அனுபவ ஆண்டுகள்"]),
+
+          experienceYears: getValue(record, [
+            "Years of Experience",
+            "Years of experience",
+            "多年经验",
+            "Tahun Pengalaman",
+            "அனுபவ ஆண்டுகள்"
+          ]),
+
           about: getValue(record, [
             "Tell us more about your stall",
+            "Tell us more about your store.",
+            "Please provide a detailed description of your stall.",
+            "Description (optional)",
             "请详细介绍一下您的摊位。",
             "Ceritakan lebih lanjut tentang gerai anda",
             "உங்கள் கடையைப் பற்றி மேலும் கூறுங்கள்"
           ]),
+
           image: imageDisplay || imageOriginal,
+
           cooperation: splitOptions(combine(cooperationMain, cooperationOther)).join(", "),
+
           qualities: getValue(record, [
             "What qualities are you looking for in a successor?",
+            "What qualities do you hope your successor will possess?",
+            "What qualities do you look for in a follower?",
             "您希望继任者具备哪些素质？",
             "Apakah ciri-ciri yang anda cari dalam pengganti?",
             "ஒரு பின்தொடர்பவரில் நீங்கள் எதிர்பார்க்கும் குணங்கள் என்ன?"
           ]),
+
           commitment: normalizeValue(getValue(record, [
             "Preferred Commitment Level",
+            "Preferred commitment level",
+            "Preferred contract status",
             "首选承诺水平",
             "Tahap komitmen yang diingini",
             "விரும்பப்படும் ஒப்பந்த நிலை"
           ])),
+
           experienceNeeded: normalizeValue(getValue(record, [
             "Do you require prior experience?",
+            "Do you require relevant experience?",
+            "Is prior experience required?",
             "你们需要相关经验吗？",
             "Adakah pengalaman diperlukan?",
             "முன் அனுபவம் தேவையா?"
           ])),
+
           requirements: getValue(record, [
             "Any additional expectations?",
+            "Are there any additional expectations?",
+            "More expectations",
             "还有什么额外的期望吗？",
             "Sebarang keperluan tambahan",
             "மேலும் எதிர்பார்ப்புகள்"
           ]),
+
           directContact: getValue(record, [
             "Are you willing to be contacted directly by interested applicants?",
+            "Would you be willing to accept direct contact from interested applicants?",
+            "Do you allow interested applicants to contact you directly?",
             "您是否愿意接受有意向的申请人的直接联系？",
             "Adakah anda bersetuju untuk dihubungi secara langsung oleh pemohon yang berminat?",
             "ஆர்வமுள்ள விண்ணப்பதாரர்கள் நேரடியாக உங்களை தொடர்பு கொள்ள அனுமதிக்கிறீர்களா?"
           ]),
+
           languages: splitOptions(combine(languageMain, languageOther)).join(", "),
+
           vicinity: normalizeValue(getValue(record, [
             "General vicinity of your stall",
+            "In what area is your stall located?",
+            "The public area where your store is located",
             "您的摊位大致位于哪个区域？",
             "Kawasan umum gerai anda",
             "உங்கள் கடை அமைந்துள்ள பொது பகுதி"
@@ -513,8 +648,14 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
       });
     });
 
+    hawkers.sort((a, b) => b.timestamp - a.timestamp);
+
     populateFilters();
     displayHawkers(hawkers);
+  })
+  .catch(error => {
+    console.error(error);
+    document.getElementById("data").innerHTML = "Unable to load hawker data.";
   });
 
 function populateFilters() {
@@ -553,9 +694,10 @@ function displayHawkers(list) {
         <div class="card-content">
           <h3>${h.name}</h3>
           <p><strong>Stall:</strong> ${h.stallName}</p>
-          <p><strong>Cuisine:</strong> ${h.cuisine}</p>
-          <p><strong>Location:</strong> ${h.location}</p>
-          <span class="tag">${h.languages}</span>
+          <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
+          <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
+          <span class="tag">${h.languages || "Languages not provided"}</span>
+          <p class="uploaded-date">Uploaded: ${formatDate(h.timestamp)}</p>
         </div>
       </div>
     `;
@@ -622,13 +764,14 @@ function openModal(index) {
     <img src="${getImageURL(h.image)}" alt="${h.stallName}">
     <h2>${h.stallName}</h2>
 
+    <p><strong>Uploaded:</strong> ${formatDate(h.timestamp)}</p>
     <p><strong>Hawker:</strong> ${h.name}</p>
-    <p><strong>Cuisine:</strong> ${h.cuisine}</p>
-    <p><strong>Food type:</strong> ${h.foodType}</p>
-    <p><strong>Location:</strong> ${h.location}</p>
-    <p><strong>General vicinity:</strong> ${h.vicinity}</p>
-    <p><strong>Languages:</strong> ${h.languages}</p>
-    <p><strong>Years of experience:</strong> ${h.experienceYears}</p>
+    <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
+    <p><strong>Food type:</strong> ${h.foodType || "Not provided"}</p>
+    <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
+    <p><strong>General vicinity:</strong> ${h.vicinity || "Not provided"}</p>
+    <p><strong>Languages:</strong> ${h.languages || "Not provided"}</p>
+    <p><strong>Years of experience:</strong> ${h.experienceYears || "Not provided"}</p>
 
     <hr>
 

@@ -2,32 +2,76 @@
 <html>
 <head>
   <title>HawkerBridge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       background: #f6f7fb;
       margin: 0;
       color: #111827;
     }
 
     header {
-      background: #0f172a;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
       color: white;
-      padding: 30px;
+      padding: 55px 25px;
       text-align: center;
     }
 
+    header h1 {
+      margin: 0;
+      font-size: 46px;
+      letter-spacing: -1px;
+    }
+
+    header p {
+      max-width: 680px;
+      margin: 14px auto 0;
+      color: #dbeafe;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
     .container {
-      padding: 25px;
+      padding: 30px 25px;
       max-width: 1200px;
       margin: auto;
+    }
+
+    .intro-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .intro-card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .intro-card h3 {
+      margin: 0 0 8px;
+      color: #0f172a;
+    }
+
+    .intro-card p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .filters {
       background: white;
       padding: 20px;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid #e5e7eb;
       box-shadow: 0 8px 24px rgba(0,0,0,0.05);
       margin-bottom: 25px;
@@ -37,19 +81,41 @@
     }
 
     input, select {
-      padding: 10px;
+      padding: 11px;
       border-radius: 10px;
       border: 1px solid #e5e7eb;
       background: #f9fafb;
       font-size: 14px;
     }
 
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: white;
+    }
+
     .match-box {
       background: #f8fafc;
       border: 1px solid #dbeafe;
-      padding: 18px;
-      border-radius: 16px;
-      margin-bottom: 25px;
+      padding: 22px;
+      border-radius: 18px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .match-box h3 {
+      margin: 0 0 6px;
+      color: #0f172a;
+    }
+
+    .match-box p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.5;
     }
 
     .quiz-button,
@@ -59,29 +125,51 @@
       background: #2563eb;
       color: white;
       text-decoration: none;
-      padding: 10px 16px;
+      padding: 11px 17px;
       border-radius: 12px;
-      font-weight: bold;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+
+    .quiz-button:hover,
+    .interest-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(37,99,235,0.3);
+    }
+
+    .section-title {
+      margin: 10px 0 18px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .section-title p {
+      margin: 6px 0 0;
+      color: #6b7280;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 22px;
     }
 
     .card {
       background: white;
-      border-radius: 18px;
+      border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.06);
       cursor: pointer;
       transition: 0.2s;
       min-height: 350px;
+      border: 1px solid #eef2f7;
     }
 
     .card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-5px);
       box-shadow: 0 18px 40px rgba(0,0,0,0.12);
     }
 
@@ -93,27 +181,30 @@
     }
 
     .card-content {
-      padding: 15px;
+      padding: 16px;
     }
 
     .card h3 {
       margin: 0 0 8px;
       font-size: 18px;
+      color: #0f172a;
     }
 
     .card p {
       margin: 6px 0;
       font-size: 14px;
+      color: #374151;
     }
 
     .tag {
       display: inline-block;
       background: #e0f2fe;
       color: #075985;
-      padding: 5px 8px;
-      border-radius: 12px;
+      padding: 5px 9px;
+      border-radius: 999px;
       font-size: 12px;
-      margin-top: 6px;
+      margin-top: 8px;
+      font-weight: 600;
     }
 
     .uploaded-date {
@@ -130,14 +221,14 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(15,23,42,0.72);
     }
 
     .modal-content {
       background: white;
       margin: 5% auto;
       padding: 25px;
-      border-radius: 18px;
+      border-radius: 20px;
       width: 85%;
       max-width: 750px;
       max-height: 80vh;
@@ -148,8 +239,9 @@
       width: 100%;
       max-height: 300px;
       object-fit: cover;
-      border-radius: 14px;
+      border-radius: 16px;
       margin-bottom: 15px;
+      background: #e5e7eb;
     }
 
     .close {
@@ -157,11 +249,29 @@
       font-size: 28px;
       cursor: pointer;
       font-weight: bold;
+      color: #0f172a;
     }
 
     .hidden-contact {
       color: #6b7280;
       font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px 20px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 34px;
+      }
+
+      .match-box {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -170,10 +280,27 @@
 
 <header>
   <h1>HawkerBridge</h1>
-  <p>Find your hawker mentor.</p>
+  <p>Connecting aspiring hawkers with experienced stall owners in Singapore through mentorship, training and succession opportunities.</p>
 </header>
 
 <div class="container">
+
+  <div class="intro-cards">
+    <div class="intro-card">
+      <h3>Browse real profiles</h3>
+      <p>Explore hawker stalls by cuisine, area, language and opportunity type.</p>
+    </div>
+
+    <div class="intro-card">
+      <h3>Find the right fit</h3>
+      <p>Use filters or the matching quiz to discover hawkers aligned with your interests.</p>
+    </div>
+
+    <div class="intro-card">
+      <h3>Connect safely</h3>
+      <p>For private contacts, express interest through the HawkerBridge matching form.</p>
+    </div>
+  </div>
 
   <div class="filters">
     <input type="text" id="searchInput" placeholder="Search by name, stall, food...">
@@ -196,9 +323,16 @@
   </div>
 
   <div class="match-box">
-    <h3>Not sure which hawker suits you?</h3>
-    <p>Take our matching quiz to find hawkers based on your interests, location, language and commitment level.</p>
+    <div>
+      <h3>Not sure which hawker suits you?</h3>
+      <p>Take our matching quiz to find hawkers based on your interests, location, language and commitment level.</p>
+    </div>
     <a class="quiz-button" href="quiz.html" target="_blank">Click here to take the quiz</a>
+  </div>
+
+  <div class="section-title">
+    <h2>Available hawker opportunities</h2>
+    <p>Click any profile to view more details.</p>
   </div>
 
   <div id="data" class="grid">Loading hawkers...</div>
@@ -211,6 +345,10 @@
     <div id="modalDetails"></div>
   </div>
 </div>
+
+<footer>
+  HawkerBridge is a student-led Project Work initiative created to support hawker succession in Singapore.
+</footer>
 
 <script>
 const sheetURLs = [

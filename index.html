@@ -449,7 +449,7 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
           location: getValue(record, ["Location of Stall", "摊位位置", "Lokasi Gerai", "கடை அமைந்துள்ள இடம்"]),
           phone: getValue(record, ["Contact Number", "联系电话", "Nombor Perhubungan", "தொடர்பு எண்"]),
           email: getValue(record, ["Email (Optional)", "电子邮件（可选）", "E-mel (Pilihan)", "மின்னஞ்சல் (விருப்பம்)"]),
-          cuisine: splitOptions(combine(cuisineMain, cuisineOther)).join(", "),
+        cuisine: splitOptions(cuisineMain).join(", "),
           foodType: getValue(record, [
             "Type of Food (e.g Chicken Rice, Wanton Mee)",
             "食物类型（例如：鸡饭、云吞面）",

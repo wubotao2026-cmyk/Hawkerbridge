@@ -3,22 +3,37 @@
 <head>
   <title>HawkerBridge</title>
 </head>
+
 <body>
   <h1>HawkerBridge</h1>
-  <h2>Find a Hawker Opportunity</h2>
+  <p>Find your hawker mentor.</p>
 
-  <p>Browse available hawker stalls and find one that suits your interests.</p>
+  <div id="data">Loading...</div>
 
-  <h3>Ah Lim Chicken Rice</h3>
-  <p>Location: Toa Payoh</p>
-  <p>Cuisine: Chinese</p>
-  <p>Commitment: Full-time</p>
-  <button>View Details</button>
+  <script>
+    const sheetURL = "PASTE_YOUR_CSV_LINK_HERE";
 
-  <h3>Mak Cik Nasi Lemak</h3>
-  <p>Location: Bedok</p>
-  <p>Cuisine: Malay</p>
-  <p>Commitment: Part-time</p>
-  <button>View Details</button>
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(data => {
+        const rows = data.split("\n");
+        let html = "";
+
+        rows.slice(1).forEach(row => {
+          const cols = row.split(",");
+
+          html += `
+            <div style="border:1px solid black; padding:10px; margin:10px;">
+              <h3>${cols[1]}</h3>
+              <p>Cuisine: ${cols[2]}</p>
+              <p>Location: ${cols[3]}</p>
+              <p>Contact: ${cols[4]}</p>
+            </div>
+          `;
+        });
+
+        document.getElementById("data").innerHTML = html;
+      });
+  </script>
 </body>
 </html>

@@ -50,6 +50,17 @@
       margin-bottom: 25px;
     }
 
+    .quiz-button {
+      display: inline-block;
+      margin-top: 8px;
+      background: #5a3e2b;
+      color: white;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -175,8 +186,8 @@
 
   <div class="match-box">
     <h3>Not sure which hawker suits you?</h3>
-    <p>Take our future matching quiz to find suitable hawkers based on your interests, location, language and commitment level.</p>
-    <a href="#">Matching quiz coming soon</a>
+    <p>Take our matching quiz to find hawkers based on your interests, location, language and commitment level.</p>
+    <a class="quiz-button" href="PASTE_YOUR_QUIZ_LINK_HERE" target="_blank">Click here to take the quiz</a>
   </div>
 
   <div id="data" class="grid">Loading hawkers...</div>
@@ -202,6 +213,91 @@ let hawkers = [];
 
 function clean(text) {
   return (text || "").trim();
+}
+
+function normalizeValue(value) {
+  value = clean(value);
+
+  const map = {
+    "North": "North",
+    "北部": "North",
+    "Utara": "North",
+    "வடக்கு": "North",
+
+    "South": "South",
+    "南部": "South",
+    "Selatan": "South",
+    "தெற்கு": "South",
+
+    "East": "East",
+    "东部": "East",
+    "Timur": "East",
+    "கிழக்கு": "East",
+
+    "West": "West",
+    "西部": "West",
+    "Barat": "West",
+    "மேற்கு": "West",
+
+    "Central": "Central",
+    "中部": "Central",
+    "Pusat": "Central",
+    "மத்திய": "Central",
+
+    "Chinese": "Chinese",
+    "中国菜": "Chinese",
+    "中式": "Chinese",
+    "சீன": "Chinese",
+
+    "Malay": "Malay",
+    "马来菜": "Malay",
+    "Melayu": "Malay",
+    "மலாய்": "Malay",
+
+    "Indian": "Indian",
+    "印度菜": "Indian",
+    "இந்திய": "Indian",
+
+    "Western": "Western",
+    "西餐": "Western",
+    "மேலைநாட்டு": "Western",
+
+    "English": "English",
+    "中文": "Chinese",
+    "华文": "Chinese",
+    "Bahasa Melayu": "Malay",
+    "தமிழ்": "Tamil",
+
+    "Part-time": "Part-time",
+    "兼职": "Part-time",
+    "Separuh masa": "Part-time",
+    "பகுதி நேரம்": "Part-time",
+
+    "Full-time": "Full-time",
+    "全职": "Full-time",
+    "Sepenuh masa": "Full-time",
+    "முழு நேரம்": "Full-time",
+
+    "Long-term": "Long-term",
+    "长期": "Long-term",
+    "Jangka panjang": "Long-term",
+    "நீண்டகாலம்": "Long-term",
+
+    "Full Stall Takeover": "Full Stall Takeover",
+    "摊位全面接管": "Full Stall Takeover",
+
+    "Apprenticeship / Training (No Pay)": "Apprenticeship / Training (No Pay)",
+    "学徒/培训（无薪）": "Apprenticeship / Training (No Pay)",
+
+    "Apprenticeship / Training(With Pay)": "Apprenticeship / Training (With Pay)",
+    "Apprenticeship / Training (With Pay)": "Apprenticeship / Training (With Pay)",
+    "学徒/培训（有薪）": "Apprenticeship / Training (With Pay)",
+
+    "Partnership": "Partnership",
+    "合伙经营": "Partnership"
+  };
+
+  return map[value] || value;
 }
 
 function parseCSV(text) {
@@ -251,6 +347,13 @@ function getValue(record, possibleHeaders) {
   return "";
 }
 
+function splitOptions(value) {
+  return clean(value)
+    .split(",")
+    .map(v => normalizeValue(v.trim()))
+    .filter(v => v !== "");
+}
+
 function combine(main, other) {
   main = clean(main);
   other = clean(other);
@@ -265,18 +368,11 @@ function getImageURL(link) {
   if (link.includes("drive.google.com")) {
     const match = link.match(/[-\w]{25,}/);
     if (match) {
-      return `https://drive.google.com/uc?export=view&id=${match[0]}`;
+      return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
     }
   }
 
   return link;
-}
-
-function splitOptions(value) {
-  return value
-    .split(",")
-    .map(v => v.trim())
-    .filter(v => v !== "");
 }
 
 Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
@@ -333,13 +429,27 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
           "மற்ற மொழிகள் (இருந்தால் குறிப்பிடவும்)"
         ]);
 
+        const imageDisplay = getValue(record, [
+          "Image (Display)",
+          "Image Display",
+          "Display Image",
+          "Thumbnail Image"
+        ]);
+
+        const imageOriginal = getValue(record, [
+          "Stall/Food image",
+          "摊位/食品图片",
+          "Gambar Gerai/Makanan",
+          "கடை / உணவு படம்"
+        ]);
+
         const hawker = {
           name: getValue(record, ["Full Name", "姓名", "Nama Penuh", "முழு பெயர்"]),
           stallName: getValue(record, ["Stall Name", "摊位名称", "Nama Gerai", "கடை பெயர்"]),
           location: getValue(record, ["Location of Stall", "摊位位置", "Lokasi Gerai", "கடை அமைந்துள்ள இடம்"]),
           phone: getValue(record, ["Contact Number", "联系电话", "Nombor Perhubungan", "தொடர்பு எண்"]),
           email: getValue(record, ["Email (Optional)", "电子邮件（可选）", "E-mel (Pilihan)", "மின்னஞ்சல் (விருப்பம்)"]),
-          cuisine: combine(cuisineMain, cuisineOther),
+          cuisine: splitOptions(combine(cuisineMain, cuisineOther)).join(", "),
           foodType: getValue(record, [
             "Type of Food (e.g Chicken Rice, Wanton Mee)",
             "食物类型（例如：鸡饭、云吞面）",
@@ -353,26 +463,26 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
             "Ceritakan lebih lanjut tentang gerai anda",
             "உங்கள் கடையைப் பற்றி மேலும் கூறுங்கள்"
           ]),
-          image: getValue(record, ["Stall/Food image", "摊位/食品图片", "Gambar Gerai/Makanan", "கடை / உணவு படம்"]),
-          cooperation: combine(cooperationMain, cooperationOther),
+          image: imageDisplay || imageOriginal,
+          cooperation: splitOptions(combine(cooperationMain, cooperationOther)).join(", "),
           qualities: getValue(record, [
             "What qualities are you looking for in a successor?",
             "您希望继任者具备哪些素质？",
             "Apakah ciri-ciri yang anda cari dalam pengganti?",
             "ஒரு பின்தொடர்பவரில் நீங்கள் எதிர்பார்க்கும் குணங்கள் என்ன?"
           ]),
-          commitment: getValue(record, [
+          commitment: normalizeValue(getValue(record, [
             "Preferred Commitment Level",
             "首选承诺水平",
             "Tahap komitmen yang diingini",
             "விரும்பப்படும் ஒப்பந்த நிலை"
-          ]),
-          experienceNeeded: getValue(record, [
+          ])),
+          experienceNeeded: normalizeValue(getValue(record, [
             "Do you require prior experience?",
             "你们需要相关经验吗？",
             "Adakah pengalaman diperlukan?",
             "முன் அனுபவம் தேவையா?"
-          ]),
+          ])),
           requirements: getValue(record, [
             "Any additional expectations?",
             "还有什么额外的期望吗？",
@@ -385,13 +495,13 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
             "Adakah anda bersetuju untuk dihubungi secara langsung oleh pemohon yang berminat?",
             "ஆர்வமுள்ள விண்ணப்பதாரர்கள் நேரடியாக உங்களை தொடர்பு கொள்ள அனுமதிக்கிறீர்களா?"
           ]),
-          languages: combine(languageMain, languageOther),
-          vicinity: getValue(record, [
+          languages: splitOptions(combine(languageMain, languageOther)).join(", "),
+          vicinity: normalizeValue(getValue(record, [
             "General vicinity of your stall",
             "您的摊位大致位于哪个区域？",
             "Kawasan umum gerai anda",
             "உங்கள் கடை அமைந்துள்ள பொது பகுதி"
-          ])
+          ]))
         };
 
         if (hawker.name && hawker.stallName) {

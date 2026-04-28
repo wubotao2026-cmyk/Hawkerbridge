@@ -515,10 +515,15 @@ Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
   });
 
 function populateFilters() {
-  fillDropdown("vicinityFilter", hawkers.map(h => h.vicinity));
-  fillDropdown("cuisineFilter", hawkers.flatMap(h => splitOptions(h.cuisine)));
-  fillDropdown("languageFilter", hawkers.flatMap(h => splitOptions(h.languages)));
-  fillDropdown("cooperationFilter", hawkers.flatMap(h => splitOptions(h.cooperation)));
+  fillDropdown("vicinityFilter", ["North", "South", "East", "West", "Central"]);
+  fillDropdown("cuisineFilter", ["Chinese", "Malay", "Indian", "Western"]);
+  fillDropdown("languageFilter", ["English", "Chinese", "Malay", "Tamil"]);
+  fillDropdown("cooperationFilter", [
+  "Full Stall Takeover",
+  "Apprenticeship / Training (No Pay)",
+  "Apprenticeship / Training (With Pay)",
+  "Partnership"
+]);
 }
 
 function fillDropdown(id, values) {

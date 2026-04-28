@@ -2,13 +2,199 @@
 <html>
 <head>
   <title>HawkerBridge</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f1e8;
+      margin: 0;
+      padding: 0;
+      color: #2b2118;
+    }
+
+    header {
+      background: #5a3e2b;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 25px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    input, select {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .match-box {
+      background: #fff7df;
+      border: 1px solid #e0c37a;
+      padding: 18px;
+      border-radius: 16px;
+      margin-bottom: 25px;
+    }
+
+    .match-box a {
+      color: #5a3e2b;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      cursor: pointer;
+      transition: 0.2s;
+      min-height: 330px;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #ddd;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #eee1d1;
+      padding: 5px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 99;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 18px;
+      width: 85%;
+      max-width: 750px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 15px;
+    }
+
+    .close {
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .hidden-contact {
+      color: #8a4b2a;
+      font-style: italic;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>HawkerBridge</h1>
-  <p>Find your hawker mentor.</p>
 
-  <div id="data">Loading...</div>
+  <header>
+    <h1>HawkerBridge</h1>
+    <p>Find your hawker mentor.</p>
+  </header>
+
+  <div class="container">
+
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Search by name, stall, food...">
+
+      <select id="locationFilter">
+        <option value="">All locations</option>
+      </select>
+
+      <select id="languageFilter">
+        <option value="">All languages</option>
+      </select>
+
+      <select id="commitmentFilter">
+        <option value="">All commitment types</option>
+      </select>
+
+      <select id="cuisineFilter">
+        <option value="">All cuisines</option>
+      </select>
+    </div>
+
+    <div class="match-box">
+      <h3>Not sure which hawker suits you?</h3>
+      <p>Take our matching quiz to find hawkers based on your interests, language, location and commitment level.</p>
+      <a href="#">Matching quiz coming soon</a>
+    </div>
+
+    <div id="data" class="grid">Loading hawkers...</div>
+
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modalDetails"></div>
+    </div>
+  </div>
 
   <script>
     const sheetURLs = [
@@ -18,38 +204,204 @@
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=208707379&single=true&output=csv"
     ];
 
-    let allData = [];
+    let hawkers = [];
 
-    Promise.all(
-      sheetURLs.map(url =>
-        fetch(url).then(res => res.text())
-      )
-    ).then(results => {
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let value = "";
+      let insideQuotes = false;
 
-      results.forEach(data => {
-        const rows = data.split("\n");
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
 
-        rows.slice(1).forEach(row => {
-          const cols = row.split(",");
-          allData.push(cols);
+        if (char === '"' && insideQuotes && next === '"') {
+          value += '"';
+          i++;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          row.push(value);
+          value = "";
+        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+          if (value || row.length > 0) {
+            row.push(value);
+            rows.push(row);
+            row = [];
+            value = "";
+          }
+        } else {
+          value += char;
+        }
+      }
+
+      if (value || row.length > 0) {
+        row.push(value);
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
+      .then(results => {
+        results.forEach(data => {
+          const rows = parseCSV(data);
+
+          rows.slice(1).forEach(cols => {
+            if (!cols[1]) return;
+
+            hawkers.push({
+              name: cols[1] || "",
+              stallName: cols[2] || "",
+              location: cols[3] || "",
+              phone: cols[4] || "",
+              email: cols[5] || "",
+              cuisine: cols[6] || "",
+              foodType: cols[8] || "",
+              experienceYears: cols[9] || "",
+              about: cols[10] || "",
+              image: cols[11] || "",
+              offer: cols[12] || "",
+              qualities: cols[14] || "",
+              commitment: cols[15] || "",
+              experienceNeeded: cols[17] || "",
+              requirements: cols[18] || "",
+              directContact: cols[19] || "",
+              languages: cols[20] || ""
+            });
+          });
         });
+
+        populateFilters();
+        displayHawkers(hawkers);
       });
 
+    function populateFilters() {
+      fillDropdown("locationFilter", hawkers.map(h => h.location));
+      fillDropdown("languageFilter", hawkers.map(h => h.languages));
+      fillDropdown("commitmentFilter", hawkers.map(h => h.commitment));
+      fillDropdown("cuisineFilter", hawkers.map(h => h.cuisine));
+    }
+
+    function fillDropdown(id, values) {
+      const dropdown = document.getElementById(id);
+      const uniqueValues = [...new Set(values.filter(v => v.trim() !== ""))];
+
+      uniqueValues.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        dropdown.appendChild(option);
+      });
+    }
+
+    function displayHawkers(list) {
       let html = "";
 
-      allData.forEach(cols => {
+      list.forEach((h, index) => {
+        const imageHTML = h.image
+          ? `<img src="${h.image}" alt="${h.stallName}">`
+          : `<img src="https://via.placeholder.com/300x200?text=HawkerBridge" alt="No image">`;
+
         html += `
-          <div style="border:1px solid black; padding:10px; margin:10px;">
-            <h3>${cols[1]}</h3>
-            <p>Cuisine: ${cols[2]}</p>
-            <p>Location: ${cols[3]}</p>
-            <p>Contact: ${cols[4]}</p>
+          <div class="card" onclick="openModal(${index})">
+            ${imageHTML}
+            <div class="card-content">
+              <h3>${h.name}</h3>
+              <p><strong>Stall:</strong> ${h.stallName}</p>
+              <p><strong>Cuisine:</strong> ${h.cuisine}</p>
+              <p><strong>Location:</strong> ${h.location}</p>
+              <span class="tag">${h.languages}</span>
+            </div>
           </div>
         `;
       });
 
-      document.getElementById("data").innerHTML = html;
-    });
+      document.getElementById("data").innerHTML = html || "No hawkers found.";
+    }
+
+    function applyFilters() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const location = document.getElementById("locationFilter").value;
+      const language = document.getElementById("languageFilter").value;
+      const commitment = document.getElementById("commitmentFilter").value;
+      const cuisine = document.getElementById("cuisineFilter").value;
+
+      const filtered = hawkers.filter(h => {
+        const textMatch =
+          h.name.toLowerCase().includes(search) ||
+          h.stallName.toLowerCase().includes(search) ||
+          h.foodType.toLowerCase().includes(search) ||
+          h.cuisine.toLowerCase().includes(search);
+
+        const locationMatch = !location || h.location === location;
+        const languageMatch = !language || h.languages.includes(language);
+        const commitmentMatch = !commitment || h.commitment === commitment;
+        const cuisineMatch = !cuisine || h.cuisine === cuisine;
+
+        return textMatch && locationMatch && languageMatch && commitmentMatch && cuisineMatch;
+      });
+
+      displayHawkers(filtered);
+    }
+
+    function openModal(index) {
+      const h = hawkers[index];
+
+      const allowedDirectContact =
+        h.directContact.includes("Yes") ||
+        h.directContact.includes("Ya") ||
+        h.directContact.includes("是") ||
+        h.directContact.includes("ஆம்");
+
+      const contactInfo = allowedDirectContact
+        ? `
+          <p><strong>Phone:</strong> ${h.phone}</p>
+          <p><strong>Email:</strong> ${h.email || "Not provided"}</p>
+        `
+        : `
+          <p class="hidden-contact"><strong>Contact:</strong> This hawker prefers to be contacted through HawkerBridge matching.</p>
+        `;
+
+      const imageHTML = h.image
+        ? `<img src="${h.image}" alt="${h.stallName}">`
+        : "";
+
+      document.getElementById("modalDetails").innerHTML = `
+        ${imageHTML}
+        <h2>${h.stallName}</h2>
+        <p><strong>Hawker:</strong> ${h.name}</p>
+        <p><strong>Cuisine:</strong> ${h.cuisine}</p>
+        <p><strong>Food type:</strong> ${h.foodType}</p>
+        <p><strong>Location:</strong> ${h.location}</p>
+        <p><strong>Languages:</strong> ${h.languages}</p>
+        <p><strong>Experience:</strong> ${h.experienceYears} years</p>
+        <p><strong>Commitment wanted:</strong> ${h.commitment}</p>
+        <p><strong>Experience needed:</strong> ${h.experienceNeeded}</p>
+        <hr>
+        <p><strong>About the stall:</strong><br>${h.about}</p>
+        <p><strong>What they offer:</strong><br>${h.offer}</p>
+        <p><strong>Qualities wanted:</strong><br>${h.qualities}</p>
+        <p><strong>Additional requirements:</strong><br>${h.requirements}</p>
+        <hr>
+        ${contactInfo}
+      `;
+
+      document.getElementById("modal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("locationFilter").addEventListener("change", applyFilters);
+    document.getElementById("languageFilter").addEventListener("change", applyFilters);
+    document.getElementById("commitmentFilter").addEventListener("change", applyFilters);
+    document.getElementById("cuisineFilter").addEventListener("change", applyFilters);
   </script>
+
 </body>
 </html>

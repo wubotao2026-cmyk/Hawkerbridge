@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HawkerBridge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: #f6f7fb;
+      margin: 0;
+      color: #111827;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: white;
+      padding: 55px 25px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 46px;
+      letter-spacing: -1px;
+    }
+
+    header p {
+      max-width: 680px;
+      margin: 14px auto 0;
+      color: #dbeafe;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .container {
+      padding: 30px 25px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .intro-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .intro-card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1.5px solid #d1d5db;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .intro-card h3 {
+      margin: 0 0 8px;
+      color: #0f172a;
+    }
+
+    .intro-card p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1.5px solid #d1d5db;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    input, select {
+      padding: 11px;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      font-size: 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: white;
+    }
+
+    .match-box {
+      background: #f8fafc;
+      border: 1.5px solid #d1d5db;
+      padding: 22px;
+      border-radius: 18px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .match-box h3 {
+      margin: 0 0 6px;
+      color: #0f172a;
+    }
+
+    .match-box p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .quiz-button,
+    .interest-button {
+      display: inline-block;
+      margin-top: 8px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      padding: 11px 17px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+
+    .quiz-button:hover,
+    .interest-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(37,99,235,0.3);
+    }
+
+    .section-title {
+      margin: 10px 0 18px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .section-title p {
+      margin: 6px 0 0;
+      color: #6b7280;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: 0.2s;
+      min-height: 350px;
+      border: 1.5px solid #d1d5db;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #e5e7eb;
+    }
+
+    .card-content {
+      padding: 16px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #0f172a;
+    }
+
+    .card p {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #075985;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .uploaded-date {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 99;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15,23,42,0.72);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 20px;
+      width: 85%;
+      max-width: 750px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 15px;
+      background: #e5e7eb;
+    }
+
+    .close {
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    .hidden-contact {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px 20px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .home-button {
+      display: inline-block;
+      margin-top: 18px;
+      background: white;
+      color: #1e3a8a;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .home-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(255,255,255,0.25);
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 34px;
+      }
+
+      .match-box {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>HawkerBridge</h1>
+  <p>Connecting aspiring hawkers with experienced stall owners in Singapore through mentorship, training and succession opportunities.</p>
+
+  <a class="home-button" href="https://sites.google.com/vjc.edu.sg/hawkerbridge/i-am-a-aspiring-hawker" target="_blank">
+    Back to Home
+  </a>
+</header>
+
+<div class="container">
+
+  <div class="intro-cards">
+    <div class="intro-card">
+      <h3>Browse real profiles</h3>
+      <p>Explore hawker stalls by cuisine, area, language and opportunity type.</p>
+    </div>
+
+    <div class="intro-card">
+      <h3>Find the right fit</h3>
+      <p>Use filters or the matching quiz to discover hawkers aligned with your interests.</p>
+    </div>
+
+    <div class="intro-card">
+      <h3>Connect safely</h3>
+      <p>For private contacts, express interest through the HawkerBridge matching form.</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="searchInput" placeholder="Search by name, stall, food...">
+
+    <select id="vicinityFilter">
+      <option value="">All areas</option>
+    </select>
+
+    <select id="languageFilter">
+      <option value="">All languages</option>
+    </select>
+
+    <select id="cooperationFilter">
+      <option value="">All opportunities</option>
+    </select>
+
+    <select id="cuisineFilter">
+      <option value="">All cuisines</option>
+    </select>
+  </div>
+
+  <div class="match-box">
+    <div>
+      <h3>Not sure which hawker suits you?</h3>
+      <p>Take our matching quiz to find hawkers based on your interests, location, language and commitment level.</p>
+    </div>
+    <a class="quiz-button" href="quiz.html" target="_blank">Click here to take the quiz</a>
+  </div>
+
+  <div class="section-title">
+    <h2>Available hawker opportunities</h2>
+    <p>Click any profile to view more details.</p>
+  </div>
+
+  <div id="data" class="grid">Loading hawkers...</div>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div id="modalDetails"></div>
+  </div>
+</div>
+
+<footer>
+  HawkerBridge is a student-led Project Work initiative created to support hawker succession in Singapore.
+</footer>
+
+<script>
+const sheetURLs = [
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=573141939&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=1090865305&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=346350130&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuhhfOdptB_dD6bCtEKxqSMaMMsQwKJrutpm_6_0700tBfd05o_pinEsDMoJo2_IefY8PAmXw_oZ6R/pub?gid=208707379&single=true&output=csv"
+];
+
+let hawkers = [];
+let currentList = [];
+
+function clean(text) {
+  return (text || "").trim();
+}
+
+function normalizeValue(value) {
+  value = clean(value);
+
+  const map = {
+    "North": "North",
+    "北部": "North",
+    "Utara": "North",
+    "வடக்கு": "North",
+
+    "South": "South",
+    "南部": "South",
+    "Selatan": "South",
+    "தெற்கு": "South",
+
+    "East": "East",
+    "东部": "East",
+    "Timur": "East",
+    "கிழக்கு": "East",
+
+    "West": "West",
+    "西部": "West",
+    "Barat": "West",
+    "மேற்கு": "West",
+
+    "Central": "Central",
+    "中部": "Central",
+    "Pusat": "Central",
+    "மத்திய": "Central",
+
+    "Chinese": "Chinese",
+    "中国菜": "Chinese",
+    "中式": "Chinese",
+    "சீனம்": "Chinese",
+    "சீன": "Chinese",
+
+    "Malay": "Malay",
+    "马来菜": "Malay",
+    "Melayu": "Malay",
+    "மலாய்": "Malay",
+
+    "Indian": "Indian",
+    "印度菜": "Indian",
+    "இந்தியம்": "Indian",
+    "இந்திய": "Indian",
+
+    "Western": "Western",
+    "西餐": "Western",
+    "மேற்கத்தியம்": "Western",
+    "மேலைநாட்டு": "Western",
+
+    "English": "English",
+    "中文": "Chinese",
+    "华文": "Chinese",
+    "Bahasa Melayu": "Malay",
+    "தமிழ்": "Tamil",
+
+    "Part-time": "Part-time",
+    "兼职": "Part-time",
+    "பகுதி நேரம்": "Part-time",
+    "Separuh masa": "Part-time",
+
+    "Full-time": "Full-time",
+    "全职": "Full-time",
+    "முழு நேரம்": "Full-time",
+    "Sepenuh masa": "Full-time",
+
+    "Long-term": "Long-term",
+    "长期": "Long-term",
+    "நீண்டகாலம்": "Long-term",
+    "Jangka panjang": "Long-term",
+
+    "Full Stall Takeover": "Full Stall Takeover",
+    "摊位全面接管": "Full Stall Takeover",
+    "முழு கடை பொறுப்பேற்பு": "Full Stall Takeover",
+
+    "Apprenticeship / Training (No Pay)": "Apprenticeship / Training (No Pay)",
+    "学徒/培训（无薪）": "Apprenticeship / Training (No Pay)",
+    "பயிற்சி / சீடத்துவம் (ஊதியம் இல்லை)": "Apprenticeship / Training (No Pay)",
+
+    "Apprenticeship / Training(With Pay)": "Apprenticeship / Training (With Pay)",
+    "Apprenticeship / Training (With Pay)": "Apprenticeship / Training (With Pay)",
+    "学徒/培训（有薪）": "Apprenticeship / Training (With Pay)",
+    "பயிற்சி / சீடத்துவம் (ஊதியத்துடன்)": "Apprenticeship / Training (With Pay)",
+
+    "Partnership": "Partnership",
+    "合伙经营": "Partnership",
+    "கூட்டுத்தாபனம்": "Partnership"
+  };
+
+  return map[value] || value;
+}
+
+function parseDate(value) {
+  if (!value) return new Date(0);
+
+  const directDate = new Date(value);
+  if (!isNaN(directDate)) return directDate;
+
+  const parts = value.split(/[\/\s:]+/);
+
+  if (parts.length >= 3) {
+    const day = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const year = Number(parts[2]);
+    const hour = Number(parts[3] || 0);
+    const minute = Number(parts[4] || 0);
+    const second = Number(parts[5] || 0);
+
+    const parsed = new Date(year, month, day, hour, minute, second);
+    if (!isNaN(parsed)) return parsed;
+  }
+
+  return new Date(0);
+}
+
+function formatDate(date) {
+  if (!date || isNaN(date) || date.getTime() === 0) {
+    return "Unknown";
+  }
+
+  return date.toLocaleDateString("en-SG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      value += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      row.push(value);
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+      if (value || row.length > 0) {
+        row.push(value);
+        rows.push(row);
+        row = [];
+        value = "";
+      }
+    } else {
+      value += char;
+    }
+  }
+
+  if (value || row.length > 0) {
+    row.push(value);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function getValue(record, possibleHeaders) {
+  for (const header of possibleHeaders) {
+    if (record[header] !== undefined && clean(record[header]) !== "") {
+      return clean(record[header]);
+    }
+  }
+  return "";
+}
+
+function splitOptions(value) {
+  return clean(value)
+    .split(",")
+    .map(v => normalizeValue(v.trim()))
+    .filter(v => v !== "");
+}
+
+function combine(main, other) {
+  main = clean(main);
+  other = clean(other);
+
+  if (main && other) return main + ", " + other;
+  return main || other || "";
+}
+
+function getImageURL(link) {
+  if (!link) return "https://via.placeholder.com/300x200?text=HawkerBridge";
+
+  if (link.includes("drive.google.com")) {
+    const match = link.match(/[-\w]{25,}/);
+    if (match) {
+      return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
+    }
+  }
+
+  return link;
+}
+
+Promise.all(sheetURLs.map(url => fetch(url).then(res => res.text())))
+  .then(results => {
+    results.forEach(data => {
+      const rows = parseCSV(data);
+      const headers = rows[0].map(h => clean(h));
+
+      rows.slice(1).forEach(row => {
+        let record = {};
+
+        headers.forEach((header, index) => {
+          record[header] = clean(row[index]);
+        });
+
+        const cuisineMain = getValue(record, [
+          "Cuisine Type",
+          "菜品类型",
+          "Jenis Masakan",
+          "சமையல் வகை",
+          "Cooking type"
+        ]);
+
+        const cuisineOther = getValue(record, [
+          "Other (Cuisine)",
+          "其他菜品类型（如有）",
+          "Jenis masakan lain (jika ada)",
+          "மற்ற உணவு வகை (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const cooperationMain = getValue(record, [
+          "What are you looking for?",
+          "您正在寻找什么类型的合作方式？",
+          "Apakah yang anda tawarkan?",
+          "நீங்கள் தேடுவது என்ன?"
+        ]);
+
+        const cooperationOther = getValue(record, [
+          "Other (Cooperation Type)",
+          "其他合作方式（如有）",
+          "Jenis kerjasama lain (jika ada)",
+          "மற்ற ஒத்துழைப்பு முறை (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const languageMain = getValue(record, [
+          "What languages can you speak",
+          "What languages ​​can you speak?",
+          "What languages ​​can you speak:",
+          "你会说哪些语言",
+          "Apakah bahasa yang anda boleh bertutur",
+          "நீங்கள் எந்த மொழிகளை பேச முடியும்:"
+        ]);
+
+        const languageOther = getValue(record, [
+          "Other (Language)",
+          "If your option is not listed above, please fill it in.",
+          "其他语言（如有）",
+          "Bahasa lain (jika ada)",
+          "மற்ற மொழிகள் (இருந்தால் குறிப்பிடவும்)"
+        ]);
+
+        const imageDisplay = getValue(record, [
+          "Image (Display)",
+          "Image Display",
+          "Display Image",
+          "Thumbnail Image"
+        ]);
+
+        const imageOriginal = getValue(record, [
+          "Stall/Food image",
+          "Stall/Food Images",
+          "Shop / Food Picture",
+          "摊位/食品图片",
+          "Gambar Gerai/Makanan",
+          "கடை / உணவு படம்"
+        ]);
+
+        const timestampRaw = getValue(record, [
+          "Timestamp",
+          "时间戳",
+          "Cap masa",
+          "நேர முத்திரை"
+        ]);
+
+        const hawker = {
+          timestamp: parseDate(timestampRaw),
+
+          name: getValue(record, [
+            "Full Name",
+            "Name",
+            "Full name",
+            "姓名",
+            "Nama Penuh",
+            "முழு பெயர்"
+          ]),
+
+          stallName: getValue(record, [
+            "Stall Name",
+            "Store name",
+            "摊位名称",
+            "Nama Gerai",
+            "கடை பெயர்"
+          ]),
+
+          location: getValue(record, [
+            "Location of Stall",
+            "stall location",
+            "Where is the store located?",
+            "摊位位置",
+            "Lokasi Gerai",
+            "கடை அமைந்துள்ள இடம்"
+          ]),
+
+          phone: getValue(record, [
+            "Contact Number",
+            "Contact number",
+            "联系电话",
+            "Nombor Perhubungan",
+            "தொடர்பு எண்"
+          ]),
+
+          email: getValue(record, [
+            "Email (Optional)",
+            "Email (optional)",
+            "电子邮件（可选）",
+            "E-mel (Pilihan)",
+            "மின்னஞ்சல் (விருப்பம்)"
+          ]),
+
+          cuisine: splitOptions(cuisineMain).join(", "),
+
+          foodType: getValue(record, [
+            "Type of Food (e.g Chicken Rice, Wanton Mee)",
+            "Food type (e.g., chicken rice, wonton noodles)",
+            "Food type (e.g.: Chicken Rice, Wonton Mee)",
+            "食物类型（例如：鸡饭、云吞面）",
+            "Jenis Makanan (contoh: Nasi Ayam, Wanton Mee)",
+            "உணவு வகை (எ.கா.: சிக்கன் ரைஸ், வொண்டன் மீ)"
+          ]),
+
+          experienceYears: getValue(record, [
+            "Years of Experience",
+            "Years of experience",
+            "多年经验",
+            "Tahun Pengalaman",
+            "அனுபவ ஆண்டுகள்"
+          ]),
+
+          about: getValue(record, [
+            "Tell us more about your stall",
+            "Tell us more about your store.",
+            "Please provide a detailed description of your stall.",
+            "Description (optional)",
+            "请详细介绍一下您的摊位。",
+            "Ceritakan lebih lanjut tentang gerai anda",
+            "உங்கள் கடையைப் பற்றி மேலும் கூறுங்கள்"
+          ]),
+
+          image: imageDisplay || imageOriginal,
+
+          cooperation: splitOptions(combine(cooperationMain, cooperationOther)).join(", "),
+
+          qualities: getValue(record, [
+            "What qualities are you looking for in a successor?",
+            "What qualities do you hope your successor will possess?",
+            "What qualities do you look for in a follower?",
+            "您希望继任者具备哪些素质？",
+            "Apakah ciri-ciri yang anda cari dalam pengganti?",
+            "ஒரு பின்தொடர்பவரில் நீங்கள் எதிர்பார்க்கும் குணங்கள் என்ன?"
+          ]),
+
+          commitment: normalizeValue(getValue(record, [
+            "Preferred Commitment Level",
+            "Preferred commitment level",
+            "Preferred contract status",
+            "首选承诺水平",
+            "Tahap komitmen yang diingini",
+            "விரும்பப்படும் ஒப்பந்த நிலை"
+          ])),
+
+          experienceNeeded: normalizeValue(getValue(record, [
+            "Do you require prior experience?",
+            "Do you require relevant experience?",
+            "Is prior experience required?",
+            "你们需要相关经验吗？",
+            "Adakah pengalaman diperlukan?",
+            "முன் அனுபவம் தேவையா?"
+          ])),
+
+          requirements: getValue(record, [
+            "Any additional expectations?",
+            "Are there any additional expectations?",
+            "More expectations",
+            "还有什么额外的期望吗？",
+            "Sebarang keperluan tambahan",
+            "மேலும் எதிர்பார்ப்புகள்"
+          ]),
+
+          directContact: getValue(record, [
+            "Are you willing to be contacted directly by interested applicants?",
+            "Would you be willing to accept direct contact from interested applicants?",
+            "Do you allow interested applicants to contact you directly?",
+            "您是否愿意接受有意向的申请人的直接联系？",
+            "Adakah anda bersetuju untuk dihubungi secara langsung oleh pemohon yang berminat?",
+            "ஆர்வமுள்ள விண்ணப்பதாரர்கள் நேரடியாக உங்களை தொடர்பு கொள்ள அனுமதிக்கிறீர்களா?"
+          ]),
+
+          languages: splitOptions(combine(languageMain, languageOther)).join(", "),
+
+          vicinity: normalizeValue(getValue(record, [
+            "General vicinity of your stall",
+            "In what area is your stall located?",
+            "The public area where your store is located",
+            "您的摊位大致位于哪个区域？",
+            "Kawasan umum gerai anda",
+            "உங்கள் கடை அமைந்துள்ள பொது பகுதி"
+          ]))
+        };
+
+        if (hawker.name && hawker.stallName) {
+          hawkers.push(hawker);
+        }
+      });
+    });
+
+    hawkers.sort((a, b) => b.timestamp - a.timestamp);
+
+    populateFilters();
+    displayHawkers(hawkers);
+  })
+  .catch(error => {
+    console.error(error);
+    document.getElementById("data").innerHTML = "Unable to load hawker data.";
+  });
+
+function populateFilters() {
+  fillDropdown("vicinityFilter", ["North", "South", "East", "West", "Central"]);
+  fillDropdown("cuisineFilter", ["Chinese", "Malay", "Indian", "Western"]);
+  fillDropdown("languageFilter", ["English", "Chinese", "Malay", "Tamil"]);
+  fillDropdown("cooperationFilter", [
+    "Full Stall Takeover",
+    "Apprenticeship / Training (No Pay)",
+    "Apprenticeship / Training (With Pay)",
+    "Partnership"
+  ]);
+}
+
+function fillDropdown(id, values) {
+  const dropdown = document.getElementById(id);
+  const uniqueValues = [...new Set(values.filter(v => v && v.trim() !== ""))];
+
+  uniqueValues.forEach(value => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    dropdown.appendChild(option);
+  });
+}
+
+function displayHawkers(list) {
+  currentList = list;
+
+  let html = "";
+
+  list.forEach((h, index) => {
+    html += `
+      <div class="card" onclick="openModal(${index})">
+        <img src="${getImageURL(h.image)}" alt="${h.stallName}">
+        <div class="card-content">
+          <h3>${h.name}</h3>
+          <p><strong>Stall:</strong> ${h.stallName}</p>
+          <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
+          <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
+          <span class="tag">${h.languages || "Languages not provided"}</span>
+          <p class="uploaded-date">Uploaded: ${formatDate(h.timestamp)}</p>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("data").innerHTML = html || "No hawkers found.";
+}
+
+function applyFilters() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const vicinity = document.getElementById("vicinityFilter").value;
+  const language = document.getElementById("languageFilter").value;
+  const cooperation = document.getElementById("cooperationFilter").value;
+  const cuisine = document.getElementById("cuisineFilter").value;
+
+  const filtered = hawkers.filter(h => {
+    const textMatch =
+      h.name.toLowerCase().includes(search) ||
+      h.stallName.toLowerCase().includes(search) ||
+      h.location.toLowerCase().includes(search) ||
+      h.foodType.toLowerCase().includes(search) ||
+      h.cuisine.toLowerCase().includes(search);
+
+    const vicinityMatch = !vicinity || h.vicinity === vicinity;
+    const languageMatch = !language || h.languages.includes(language);
+    const cooperationMatch = !cooperation || h.cooperation.includes(cooperation);
+    const cuisineMatch = !cuisine || h.cuisine.includes(cuisine);
+
+    return textMatch && vicinityMatch && languageMatch && cooperationMatch && cuisineMatch;
+  });
+
+  displayHawkers(filtered);
+}
+
+function openModal(index) {
+  const h = currentList[index];
+
+  const applicationFormLink =
+  `https://docs.google.com/forms/d/e/1FAIpQLSepecQxEnAd-q-0KxFCv8OKKCCtmUSd_A6DalftjvKqO5tMVg/viewform?usp=pp_url&entry.882535211=${encodeURIComponent(h.name)}`;
+
+  const contactInfo = `
+  <p><strong>Recommended application method:</strong></p>
+
+  <a class="interest-button"
+     href="${applicationFormLink}"
+     target="_blank">
+     Apply here through HawkerBridge
+  </a>
+
+  <hr>
+
+  <p><strong>Direct contact details:</strong></p>
+  <p><strong>Phone:</strong> ${h.phone || "Not provided"}</p>
+  <p><strong>Email:</strong> ${h.email || "Not provided"}</p>
+`;
+
+  document.getElementById("modalDetails").innerHTML = `
+    <img src="${getImageURL(h.image)}" alt="${h.stallName}">
+    <h2>${h.stallName}</h2>
+
+    <p><strong>Uploaded:</strong> ${formatDate(h.timestamp)}</p>
+    <p><strong>Hawker:</strong> ${h.name}</p>
+    <p><strong>Cuisine:</strong> ${h.cuisine || "Not provided"}</p>
+    <p><strong>Food type:</strong> ${h.foodType || "Not provided"}</p>
+    <p><strong>Location:</strong> ${h.location || "Not provided"}</p>
+    <p><strong>General vicinity:</strong> ${h.vicinity || "Not provided"}</p>
+    <p><strong>Languages:</strong> ${h.languages || "Not provided"}</p>
+    <p><strong>Years of experience:</strong> ${h.experienceYears || "Not provided"}</p>
+
+    <hr>
+
+    <p><strong>About the stall:</strong><br>${h.about || "Not provided"}</p>
+    <p><strong>Opportunity type:</strong><br>${h.cooperation || "Not provided"}</p>
+    <p><strong>Preferred commitment:</strong><br>${h.commitment || "Not provided"}</p>
+    <p><strong>Qualities wanted:</strong><br>${h.qualities || "Not provided"}</p>
+    <p><strong>Prior experience required:</strong><br>${h.experienceNeeded || "Not provided"}</p>
+    <p><strong>Additional expectations:</strong><br>${h.requirements || "Not provided"}</p>
+
+    <hr>
+
+    ${contactInfo}
+  `;
+
+  document.getElementById("modal").style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+document.getElementById("searchInput").addEventListener("input", applyFilters);
+document.getElementById("vicinityFilter").addEventListener("change", applyFilters);
+document.getElementById("languageFilter").addEventListener("change", applyFilters);
+document.getElementById("cooperationFilter").addEventListener("change", applyFilters);
+document.getElementById("cuisineFilter").addEventListener("change", applyFilters);
+
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    closeModal();
+  }
+});
+</script>
+
+</body>
+</html>
